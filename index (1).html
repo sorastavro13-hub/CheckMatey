@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101923">
+<title>CheckMatey — Play. Learn. Improve. Together.</title>
+<style>
+:root{--bg:#0c1219;--panel:#141f2a;--panel2:#1b2936;--line:#2a3b49;--text:#edf3f7;--muted:#a7b7c4;--lime:#9b8cff;--lime-dark:#5f8cff;--light:#e8e2d4;--dark:#637f91;--danger:#ffb4a8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1a2a36 0%,var(--bg) 58%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,select,input,textarea{font:inherit}button{cursor:pointer}
+.shell{max-width:1160px;margin:auto;padding:22px 18px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#9b8cff,#59d9ff);color:#101923;display:grid;place-items:center;font-size:29px;font-weight:900;box-shadow:0 8px 28px #8e7dff33}
+.brand h1{font-size:1.18rem;letter-spacing:.13em;margin:0}.tagline{font-size:.72rem;color:var(--lime);letter-spacing:.13em;margin-top:5px}
+.pill{border:1px solid #3b4d58;color:#c8d4dc;padding:8px 11px;border-radius:99px;font-size:.78rem;white-space:nowrap}
+.hero{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:20px}.eyebrow{color:var(--lime);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+h2{font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.05;letter-spacing:-.04em;margin:8px 0 10px}.hero p{color:var(--muted);line-height:1.55;max-width:650px;margin:0}.tag{font-size:.76rem;color:#d9e6ed;border:1px solid var(--line);border-radius:8px;padding:7px 10px;display:inline-block}
+.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:18px;align-items:start}
+.panel{background:linear-gradient(160deg,#182531,#111a23);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 16px 40px #0002}
+.panel-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-head h3{margin:0;font-size:1rem}.status{color:var(--lime);font-size:.82rem;font-weight:750}
+.game-area{padding:16px}
+.board-wrap{width:100%;max-width:620px;margin:auto;position:relative;container-type:inline-size}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1/1;min-width:0;min-height:0;border:5px solid #273946;border-radius:7px;overflow:hidden;box-shadow:0 12px 32px #0005}
+.square{position:relative;display:grid;place-items:center;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:auto;overflow:hidden;padding:0;border:0;border-radius:0;line-height:1}
+.square.light{background:var(--light)}.square.dark{background:var(--dark)}
+.square.drag-target{outline:3px solid #b9e75a;outline-offset:-4px}.square[draggable="true"]{cursor:grab}.square[draggable="true"]:active{cursor:grabbing}
+.square.last{background-image:linear-gradient(#d6f36a5b,#d6f36a5b)}
+.square.legal::after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#10251e99}
+.square.capture::after{content:"";position:absolute;inset:4%;border:4px solid #b9e75a;border-radius:50%}
+.piece{font-family:"Segoe UI Symbol","DejaVu Sans",serif;font-size:clamp(1.05rem,9.2cqw,3.65rem);line-height:1;z-index:1;filter:drop-shadow(0 1px 0 #0004);user-select:none;pointer-events:none;white-space:nowrap}
+.white-piece{color:#fffdf4;text-shadow:-1px -1px 0 #28313a,1px -1px 0 #28313a,-1px 1px 0 #28313a,1px 1px 0 #28313a}
+.black-piece{color:#17212a;text-shadow:0 1px 0 #e5e5dc}
+.coord{position:absolute;font-size:clamp(.48rem,1.4vw,.7rem);font-weight:800;pointer-events:none;z-index:2}.coord.rank{left:5px;top:3px}.coord.file{right:5px;bottom:2px}.light .coord{color:#637f91}.dark .coord{color:#f2eadb}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.btn{border:1px solid #405361;background:#21313e;color:var(--text);padding:10px 13px;border-radius:10px;font-weight:700;font-size:.85rem}.btn:hover{filter:brightness(1.13)}.btn.primary{background:var(--lime);color:#15200e;border-color:var(--lime)}.btn.ghost{background:transparent}.btn:disabled{opacity:.35;cursor:not-allowed}
+select{background:#1b2a36;border:1px solid #3b4d58;border-radius:9px;color:var(--text);padding:9px;max-width:100%}
+.mode-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mode-row label{font-size:.8rem;color:var(--muted)}
+.side-stack{display:grid;gap:14px}.side-panel{padding:17px}.side-panel h3{margin:0 0 11px;font-size:1rem}.side-panel p{color:var(--muted);font-size:.88rem;line-height:1.55;margin:0 0 10px}
+.move-list{height:130px;overflow:auto;background:#0d151d;border:1px solid #263744;border-radius:10px;padding:9px;font-size:.85rem;line-height:1.8;color:#d9e3e9;white-space:pre-wrap}
+.feature-list{display:grid;gap:9px}.feature{display:flex;gap:10px;align-items:flex-start}.feature-icon{width:31px;height:31px;flex:0 0 31px;border-radius:9px;background:#292547;color:var(--lime);display:grid;place-items:center;font-weight:900}.feature b{display:block;font-size:.85rem;margin-bottom:3px}.feature span{display:block;font-size:.78rem;line-height:1.45;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+textarea{width:100%;min-height:76px;resize:vertical;background:#0d151d;border:1px solid #354956;border-radius:10px;padding:10px;color:var(--text);outline:none}textarea:focus{border-color:var(--lime)}
+.note{font-size:.76rem!important;color:#94a7b5!important}.feedback{margin-top:10px;min-height:20px;color:var(--lime);font-size:.82rem}
+footer{color:#7f929f;font-size:.75rem;text-align:center;margin-top:24px;line-height:1.6}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.pill{display:none}.side-stack{grid-template-columns:1fr 1fr}.side-stack .panel:first-child{grid-column:1/-1}}
+@media(max-width:520px){.shell{padding:15px 10px 32px}.side-stack{grid-template-columns:1fr}.panel-head{padding:13px}.game-area{padding:9px}.board{border-width:3px}.btn{padding:9px 10px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <div class="brand"><div class="logo">♞</div><div><h1>CheckMatey</h1><div class="tagline">PLAY • LEARN • IMPROVE • TOGETHER</div></div></div>
+  <div class="pill">EARLY PLAYABLE PROTOTYPE · V0.1</div>
+</header>
+<section class="hero">
+  <div><div class="eyebrow">A better competitive environment</div><h2>Play boldly.<br>Respect the game.</h2><p>Classic chess with a different mindset: learn from your games, compete respectfully, and keep the focus on your next good decision.</p></div>
+  <div class="tag">Free prototype · No account required</div>
+</section>
+<div class="layout">
+  <section class="panel">
+    <div class="panel-head"><h3>♟ The Board</h3><div id="status" class="status">White to move</div></div>
+    <div class="game-area">
+      <div class="mode-row" style="margin-bottom:13px">
+        <label for="mode">Play mode</label>
+        <select id="mode"><option value="computer">Single-player · vs computer</option><option value="local">Local two-player · same device</option></select>
+        <label for="side" id="sideLabel">Play as</label>
+        <select id="side"><option value="w">White</option><option value="b">Black</option></select>
+      </div>
+      <div class="board-wrap"><div id="board" class="board" role="group" aria-label="Chessboard"></div></div>
+      <div class="controls">
+        <button id="newGame" class="btn primary">New game</button>
+        <button id="undo" class="btn">Undo move</button>
+        <button id="flip" class="btn ghost">Flip board</button>
+        <button id="resign" class="btn ghost">End game</button>
+      </div>
+      <p id="gameMessage" class="note" style="margin:12px 0 0">Click a piece and a highlighted square, or drag a piece to a highlighted destination. Green rings show legal moves.</p>
+    </div>
+  </section>
+  <aside class="side-stack">
+    <section class="panel side-panel">
+      <h3>Move history</h3>
+      <div id="moves" class="move-list">Your game moves will appear here.</div>
+      <hr>
+      <h3>After-game reflection</h3>
+      <p>When the game ends, take a moment to identify one decision you want to understand better.</p>
+      <label for="reflection" class="note">What is one position or decision you want to revisit?</label>
+      <textarea id="reflection" maxlength="500" placeholder="Example: I moved my queen too early. Next time, I want to develop my pieces first."></textarea>
+      <div class="controls"><button id="saveReflection" class="btn">Keep reflection on this device</button><button id="clearReflection" class="btn ghost">Clear</button></div>
+      <div id="reflectionMessage" class="feedback" aria-live="polite"></div>
+      <p class="note">Your reflection stays in this page only. This prototype does not send it to a server.</p>
+    </section>
+    <section class="panel side-panel">
+      <h3>Fair Play Centre</h3>
+      <p>Good competition means following the rules, respecting opponents, and handling uncertainty responsibly.</p>
+      <div class="feature-list">
+        <div class="feature"><div class="feature-icon">✓</div><div><b>Play honestly</b><span>Make your own decisions and follow the rules of the platform you use.</span></div></div>
+        <div class="feature"><div class="feature-icon">↗</div><div><b>Report privately</b><span>If something concerns you, use the official reporting process on the service where the game happened.</span></div></div>
+        <div class="feature"><div class="feature-icon">!</div><div><b>Don't accuse publicly</b><span>A surprising move, a high accuracy score, or a loss alone does not prove cheating.</span></div></div>
+        <div class="feature"><div class="feature-icon">✦</div><div><b>Respect the person</b><span>Critique decisions, not people. Congratulate good play and take breaks when frustrated.</span></div></div>
+      </div>
+      <hr><p class="note">CheckMatey does not detect cheating or judge other players. It is a learning-focused prototype, not an official fair-play authority.</p>
+    </section>
+    <section class="panel side-panel">
+      <h3>Help shape CheckMatey</h3>
+      <p>Which improvement would make this prototype more useful to you? Choose one and copy it into your own notes or feedback message.</p>
+      <select id="idea"><option>More useful post-game explanations</option><option>More puzzle and challenge modes</option><option>Better computer opponent</option><option>Friendlier local tournaments</option><option>More tools for fair play and respectful conduct</option><option>Accessibility and board customization</option></select>
+      <div class="controls"><button id="copyIdea" class="btn">Copy suggestion</button></div>
+      <div id="ideaMessage" class="feedback" aria-live="polite"></div>
+    </section>
+  </aside>
+</div>
+<footer>CheckMatey is an independent prototype. No accounts, public chat, ratings, or cheating-detection claims are included in this first build.<br>Chess rules powered by chess.js. A connection is required to load the rules library.</footer>
+</div>
+<script type="module">
+import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
+(() => {
+  const $ = id => document.getElementById(id);
+  if (typeof Chess === 'undefined') {
+    $('status').textContent = 'Rules library unavailable';
+    $('gameMessage').textContent = 'Connect to the internet and reload this page so the chess rules library can load.';
+    return;
+  }
+  const PIECES = {w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'},b:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}};
+  const VALUE = {p:100,n:320,b:335,r:500,q:900,k:20000};
+  let game = new Chess();
+  let selected = null, legalTargets = [], lastMove = null, flipped = false, ended = false, thinking = false;
+  let historyStack = [];
+  const boardEl = $('board');
+  const modeEl = $('mode'), sideEl = $('side');
+  const files = ['a','b','c','d','e','f','g','h'];
+  function currentHumanColor(){return modeEl.value === 'local' ? null : sideEl.value;}
+  function isHumanTurn(){return modeEl.value === 'local' || game.turn() === currentHumanColor();}
+  function squareColor(square){const f=files.indexOf(square[0]), r=Number(square[1]);return (f+(8-r))%2===0?'light':'dark';}
+  function renderBoard(){
+    boardEl.innerHTML='';
+    let squares=[];
+    for(let r=8;r>=1;r--) for(let f=0;f<8;f++) squares.push(files[f]+r);
+    if(flipped) squares.reverse();
+    squares.forEach((sq,index)=>{
+      const piece=game.get(sq), btn=document.createElement('button');
+      btn.type='button'; btn.className='square '+squareColor(sq);
+      btn.dataset.square=sq;
+      btn.draggable=!!piece;
+      if(lastMove && (lastMove.from===sq || lastMove.to===sq)) btn.classList.add('last');
+      if(legalTargets.includes(sq)) btn.classList.add(piece?'capture':'legal');
+      btn.setAttribute('aria-label',sq+(piece? ' '+(piece.color==='w'?'white ':'black ')+piece.type:' empty'));
+      if(piece){const span=document.createElement('span');span.className='piece '+(piece.color==='w'?'white-piece':'black-piece');span.textContent=PIECES[piece.color][piece.type];btn.appendChild(span);}
+      const visualRow = Math.floor(index/8), visualCol=index%8;
+      if(visualCol===0){const c=document.createElement('span');c.className='coord rank';c.textContent=sq[1];btn.appendChild(c);}
+      if(visualRow===7){const c=document.createElement('span');c.className='coord file';c.textContent=sq[0];btn.appendChild(c);}
+      btn.addEventListener('click',()=>onSquare(sq));
+      btn.addEventListener('dragstart',(event)=>{
+        if(!piece || ended || thinking || !isHumanTurn() || (modeEl.value==='computer' && piece.color!==game.turn())){
+          event.preventDefault();
+          return;
+        }
+        selected=sq;
+        legalTargets=game.moves({square:sq,verbose:true}).map(m=>m.to);
+        if(!legalTargets.length){event.preventDefault();selected=null;return;}
+        event.dataTransfer.setData('text/plain',sq);
+        event.dataTransfer.effectAllowed='move';
+        boardEl.querySelectorAll('.square').forEach(target=>{
+          const targetSq=target.dataset.square;
+          if(legalTargets.includes(targetSq)){
+            target.classList.add('drag-target');
+            target.classList.add(game.get(targetSq)?'capture':'legal');
+          }
+        });
+      });
+      btn.addEventListener('dragover',(event)=>{
+        if(legalTargets.includes(sq) && !ended && !thinking && isHumanTurn()){
+          event.preventDefault();
+          event.dataTransfer.dropEffect='move';
+        }
+      });
+      btn.addEventListener('drop',(event)=>{
+        event.preventDefault();
+        const from=event.dataTransfer.getData('text/plain');
+        if(from && from===selected && legalTargets.includes(sq)){
+          onSquare(sq);
+        }
+      });
+      btn.addEventListener('dragend',()=>{
+        boardEl.querySelectorAll('.drag-target').forEach(target=>target.classList.remove('drag-target'));
+      });
+      boardEl.appendChild(btn);
+    });
+  }
+  function updateMoves(){
+    const h=game.history();
+    if(!h.length){$('moves').textContent='Your game moves will appear here.';return;}
+    let out='';
+    for(let i=0;i<h.length;i+=2) out+=(Math.floor(i/2)+1)+'. '+h[i]+(h[i+1]?'   '+h[i+1]:'')+'\n';
+    $('moves').textContent=out;$('moves').scrollTop=$('moves').scrollHeight;
+  }
+  function resultText(){
+    if(game.isCheckmate()) return 'Checkmate — '+(game.turn()==='w'?'Black':'White')+' wins.';
+    if(game.isStalemate()) return 'Draw — stalemate.';
+    if(game.isThreefoldRepetition()) return 'Draw — threefold repetition.';
+    if(game.isInsufficientMaterial()) return 'Draw — insufficient material.';
+    if(game.isDraw()) return 'Draw.';
+    return '';
+  }
+  function updateStatus(){
+    const result=resultText();
+    if(ended){$('status').textContent='Game ended';return;}
+    if(result){$('status').textContent=result;ended=true;$('gameMessage').textContent='Game complete. Use the reflection box to record one thing you learned.';return;}
+    const who=game.turn()==='w'?'White':'Black';
+    $('status').textContent=who+' to move'+(game.isCheck()?' · Check':'')+(thinking?' · Computer thinking':'');
+    if(modeEl.value==='computer') $('gameMessage').textContent=thinking?'The computer is considering a move.':'Playing against the computer as '+(sideEl.value==='w'?'White':'Black')+'.';
+    else $('gameMessage').textContent='Local two-player mode. Pass the device respectfully after each turn.';
+  }
+  function render(){renderBoard();updateMoves();updateStatus();$('undo').disabled=game.history().length===0||thinking;}
+  function onSquare(sq){
+    if(ended||thinking||!isHumanTurn()) return;
+    const piece=game.get(sq);
+    if(selected && legalTargets.includes(sq)){
+      const opts=game.moves({square:selected,verbose:true}).filter(m=>m.to===sq);
+      let promotion;
+      if(opts.some(m=>m.flags.includes('p'))){
+        const answer=window.prompt('Promote pawn to: q (queen), r (rook), b (bishop), or n (knight)','q');
+        if(answer===null)return;
+        promotion=answer.toLowerCase();
+        if(!['q','r','b','n'].includes(promotion)){ $('gameMessage').textContent='Promotion cancelled: enter q, r, b, or n.';return; }
+      }
+      makeMove({from:selected,to:sq,...(promotion?{promotion}:{})});return;
+    }
+    if(piece && (modeEl.value==='local'||piece.color===game.turn())){
+      selected=sq;legalTargets=game.moves({square:sq,verbose:true}).map(m=>m.to);renderBoard();
+    } else {selected=null;legalTargets=[];renderBoard();}
+  }
+  function makeMove(move){
+    try{
+      const result=game.move(move);
+      if(!result)return;
+      lastMove={from:result.from,to:result.to};selected=null;legalTargets=[];
+      render();
+      if(!ended && modeEl.value==='computer' && game.turn()!==currentHumanColor()) setTimeout(computerMove,80);
+    }catch(e){$('gameMessage').textContent='That move could not be played. Choose a legal destination.';}
+  }
+  function evaluate(g){
+    let score=0;const b=g.board();
+    for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+      const p=b[r][f];if(!p)continue;
+      const sign=p.color==='w'?1:-1, val=VALUE[p.type]||0;
+      let positional=0;
+      const center=3.5-(Math.abs(3.5-f)+Math.abs(3.5-r))/2;
+      if(p.type==='n'||p.type==='b') positional+=center*7;
+      if(p.type==='p') positional+=(p.color==='w'?(6-r):(r-1))*5;
+      score+=sign*(val+positional);
+    }
+    if(g.isCheckmate()) return g.turn()==='w'?-999999:999999;
+    return score;
+  }
+  function minimax(g,depth,alpha,beta){
+    if(depth===0||g.isGameOver())return evaluate(g);
+    const moves=g.moves({verbose:true});
+    if(g.turn()==='w'){
+      let best=-Infinity;
+      for(const m of moves){g.move(m);const s=minimax(g,depth-1,alpha,beta);g.undo();best=Math.max(best,s);alpha=Math.max(alpha,best);if(beta<=alpha)break;}
+      return best;
+    }else{
+      let best=Infinity;
+      for(const m of moves){g.move(m);const s=minimax(g,depth-1,alpha,beta);g.undo();best=Math.min(best,s);beta=Math.min(beta,best);if(beta<=alpha)break;}
+      return best;
+    }
+  }
+  function computerMove(){
+    if(ended||modeEl.value!=='computer'||game.turn()===currentHumanColor())return;
+    thinking=true;updateStatus();$('undo').disabled=true;
+    setTimeout(()=>{
+      if(ended)return;
+      const moves=game.moves({verbose:true});
+      if(!moves.length){thinking=false;render();return;}
+      let scored=[];
+      for(const m of moves){
+        game.move(m);
+        const score=minimax(game,1,-Infinity,Infinity);
+        game.undo();
+        scored.push({m,score});
+      }
+      scored.sort((a,b)=>game.turn()==='w'?b.score-a.score:a.score-b.score);
+      // A little controlled variety: sometimes choose among several near-best moves.
+      const pool=scored.slice(0,Math.min(3,scored.length));
+      const chosen=pool[Math.floor(Math.random()*pool.length)].m;
+      thinking=false;
+      makeMove({from:chosen.from,to:chosen.to,...(chosen.promotion?{promotion:chosen.promotion}:{})});
+    },10);
+  }
+  function resetGame(){
+    game=new Chess();selected=null;legalTargets=[];lastMove=null;ended=false;thinking=false;historyStack=[];$('reflection').value='';$('reflectionMessage').textContent='';render();
+    if(modeEl.value==='computer'&&sideEl.value==='b')setTimeout(computerMove,100);
+  }
+  $('newGame').addEventListener('click',resetGame);
+  $('undo').addEventListener('click',()=>{
+    if(thinking)return;
+    if(modeEl.value==='computer'){if(game.history().length)game.undo();if(game.history().length)game.undo();}
+    else if(game.history().length)game.undo();
+    selected=null;legalTargets=[];lastMove=null;ended=false;render();
+  });
+  $('flip').addEventListener('click',()=>{flipped=!flipped;renderBoard();});
+  $('resign').addEventListener('click',()=>{if(ended)return;if(confirm('End this game now?')){ended=true;$('status').textContent='Game ended';$('gameMessage').textContent='Game ended by player choice. Record a reflection if useful.';}});
+  modeEl.addEventListener('change',()=>{sideEl.disabled=modeEl.value==='local';$('sideLabel').style.opacity=modeEl.value==='local'?'.4':'1';resetGame();});
+  sideEl.addEventListener('change',resetGame);
+  $('saveReflection').addEventListener('click',()=>{$('reflectionMessage').textContent=$('reflection').value.trim()?'Reflection kept in this page. It is not uploaded.':'Write a short reflection first.';});
+  $('clearReflection').addEventListener('click',()=>{$('reflection').value='';$('reflectionMessage').textContent='Reflection cleared.';});
+  $('copyIdea').addEventListener('click',async()=>{
+    const text='CheckMatey feature suggestion: '+$('idea').value;
+    try{await navigator.clipboard.writeText(text);$('ideaMessage').textContent='Suggestion copied.';}
+    catch(e){$('ideaMessage').textContent='Suggestion: '+text+' (select and copy manually if needed).';}
+  });
+  sideEl.disabled=false;
+  render();
+})();
+</script>
+</body>
+</html>
